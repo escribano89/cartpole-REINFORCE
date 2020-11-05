@@ -5,23 +5,24 @@ import matplotlib.pyplot as plt
 import torch
 import torch.optim as optim
 from policy import Policy
+import time
 
 N_EPISODES = 1000
-MAX_TIMESTEP = 1000
+MAX_TIMESTEPS = 1000
 GAMMA = 1.0
 PRINT_EVERY = 100
 GOAL = 195.0
-LEARNING_RATE = 1e-2
-DEVICE = 'CPU'
+LEARNING_RATE = 0.005
+DEVICE = 'cpu'
 
 def get_policy_loss(log_probabilities, traj_rewards_sum):
     policy_loss = []
     
     for log_prob in log_probabilities:
         policy_loss.append(-log_prob * traj_rewards_sum)
-    policy_loss = torch.cat(policy_loss).sum()
     
-    return policy_loss
+    # Concatenates the given sequence of seq tensors in the given dimension.
+    return torch.cat(policy_loss).sum()
 
 def get_trajectory_rewards(trajectory_rewards):
     discounts = [GAMMA**i for i in range(len(trajectory_rewards)+1)]
@@ -32,11 +33,11 @@ def back_and_step_forward(optimizer, policy_loss):
     policy_loss.backward()
     optimizer.step()
 
-def do_episode(i_episode, scores, scores_deque):
+def do_episode(env, policy):
     saved_log_probs = []
     trajectory_rewards = []
     state = env.reset()
-    for t in range(MAX_TIMESTEP):
+    for t in range(MAX_TIMESTEPS):
         action, log_probabilities = policy.act(state, DEVICE)
         state, reward, done, _ = env.step(action)
         trajectory_rewards.append(reward)
@@ -45,17 +46,17 @@ def do_episode(i_episode, scores, scores_deque):
             break
          
     traj_rewards_sum = get_trajectory_rewards(trajectory_rewards)
-    policy_loss = get_policy_loss(log_probabilities, traj_rewards_sum)
+    policy_loss = get_policy_loss(saved_log_probs, traj_rewards_sum)
     back_and_step_forward(optimizer, policy_loss)
     
     return trajectory_rewards
 
-def training(policy, optimizer):
+def training(env, policy, optimizer):
     scores_deque = deque(maxlen=PRINT_EVERY)
     scores = []
     
     for i_episode in range(1, N_EPISODES+1):
-        trajectory_rewards = do_episode(i_episode)
+        trajectory_rewards = do_episode(env, policy)
         scores_deque.append(sum(trajectory_rewards))
         scores.append(sum(trajectory_rewards))
     
@@ -65,20 +66,20 @@ def training(policy, optimizer):
         if np.mean(scores_deque)>= GOAL:
             print('Environment solved in {:d} episodes!\tAverage Score: {:.2f}'.format(
                 i_episode-PRINT_EVERY, np.mean(scores_deque)))
-            torch.save(policy.state_dict(), 'trained_policy.pth')
+            timestr = time.strftime("%Y%m%d-%H%M%S")
+            torch.save(policy.state_dict(), 'trained_policy_{}.pth'.format(timestr))
             break
     
     return scores
 
 if __name__ == "__main__":
     env = gym.make('CartPole-v0')
-    print('Observation Space:', env.observation_space)
-    print('Action Space:', env.action_space)
+    # print('Observation Space:', env.observation_space)
+    # print('Action Space:', env.action_space)
     
     policy = Policy().to(DEVICE)
     optimizer = optim.Adam(policy.parameters(), lr=LEARNING_RATE)
-    
-    scores = training(policy, optimizer)
+    scores = training(env, policy, optimizer)
     
     fig = plt.figure()
     ax = fig.add_subplot(111)
