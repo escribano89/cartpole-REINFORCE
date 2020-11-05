@@ -1,7 +1,8 @@
-CartPole-v0 environment solved using the [REINFORCE](https://towardsdatascience.com/policy-gradient-methods-104c783251e0
+CartPole-v0 environment solved using the [REINFORCE](https://people.cs.umass.edu/~barto/courses/cs687/williams92simple.pdf
 ) algorithm.
 
 Implemented using PyTorch https://pytorch.org/
+[CartPole environment](https://gym.openai.com/envs/CartPole-v0/=
 
 ![Training](https://github.com/escribano89/cartpole-REINFORCE/blob/main/results/figure.png)
 
