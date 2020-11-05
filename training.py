@@ -65,6 +65,7 @@ def training(policy, optimizer):
         if np.mean(scores_deque)>= GOAL:
             print('Environment solved in {:d} episodes!\tAverage Score: {:.2f}'.format(
                 i_episode-PRINT_EVERY, np.mean(scores_deque)))
+            torch.save(policy.state_dict(), 'trained_policy.pth')
             break
     
     return scores
