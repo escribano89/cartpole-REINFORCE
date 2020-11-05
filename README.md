@@ -1,4 +1,4 @@
-[CartPole-v0](https://gym.openai.com/envs/CartPole-v0/) environment solved using [REINFORCE](https://people.cs.umass.edu/~barto/courses/cs687/williams92simple.pdf
+[CartPole-v0](https://gym.openai.com/envs/CartPole-v0/) environment solved using the [REINFORCE](https://people.cs.umass.edu/~barto/courses/cs687/williams92simple.pdf
 ) algorithm.
 
 Framework used -> [PyTorch](https://pytorch.org/)
